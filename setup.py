@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 REPO_NAME = "WinterHackhatonFCT"
 AUTHOR_USER_NAME = "RodrigoRalhaMoreira"
 SRC_REPO = "src"
-LIST_OF_REQUIREMENTS = ['streamlit', 'numpy']
+LIST_OF_REQUIREMENTS = ['streamlit', 'numpy', 'seaborn']
 
 
 setup(
