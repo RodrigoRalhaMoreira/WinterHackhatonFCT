@@ -1,6 +1,8 @@
 import pickle
+import numpy as np  
 import streamlit as st
-import numpy as np
+from dataclasses import dataclass
+
 
 
 hide_streamlit_style = """
@@ -12,11 +14,9 @@ hide_streamlit_style = """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
-
 # Create a sidebar with some options
 with st.sidebar:
     st.title("Sidebar Title")
-
 
 
 st.header('Find something to read')
@@ -25,12 +25,31 @@ model = pickle.load(open('artifacts/model.pkl','rb'))
 book_names = pickle.load(open('artifacts/book_names.pkl','rb'))
 final_rating = pickle.load(open('artifacts/final_rating.pkl','rb'))
 book_pivot = pickle.load(open('artifacts/book_pivot.pkl','rb'))
-
+genres =['Action', 'Crime', 'Drama', 'Comedy', 'Horror', 'Sci-Fi/Fantasy']
+languages=['English','French','Spanish','Italian']
 
 selected_books = st.selectbox(
     "Search \U0001F50D",
     book_names
 )
+# Initialization
+if 'genre' not in st.session_state:
+    st.session_state['genre'] = ''
+if 'language' not in st.session_state:
+    st.session_state['language'] = ''
+if 'show_filters' not in st.session_state:
+    st.session_state['show_filters'] = ""
+
+if st.button("Filters"):
+    update_state = 'True' if st.session_state['show_filters'] == 'False' or st.session_state['show_filters'] == '' else "False"
+    st.session_state['show_filters'] = update_state
+    
+    
+if st.session_state["show_filters"] == "True":
+    genre=st.selectbox('Select Genre', genres)
+    language=st.selectbox('Select Language', languages)
+    st.session_state['genre'] = genre
+    st.session_state['language'] = language
 
 
 def fetch_poster(suggestion):
@@ -66,8 +85,6 @@ def recommend_book(book_name):
                 books_list.append(j)
     return books_list , poster_url    
        
-
-
 
 
 
