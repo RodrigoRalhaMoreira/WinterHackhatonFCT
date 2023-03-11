@@ -24,13 +24,14 @@ model = pickle.load(open("artifacts/model.pkl", "rb"))
 book_names = pickle.load(open("artifacts/book_names.pkl", "rb"))
 final_rating = pickle.load(open("artifacts/final_rating.pkl", "rb"))
 book_pivot = pickle.load(open("artifacts/book_pivot.pkl", "rb"))
-genres = ["Action", "Crime", "Drama", "Comedy", "Horror", "Sci-Fi/Fantasy"]
+authors = pickle.load(open("artifacts/authors.pkl", "rb"))
+
 years = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
 
 selected_books = st.selectbox("Search \U0001F50D", book_names)
 # Initialization
-if "genre" not in st.session_state:
-    st.session_state["genre"] = ""
+if "author" not in st.session_state:
+    st.session_state["author"] = ""
 if "from" not in st.session_state:
     st.session_state["from"] = ""
 if "to" not in st.session_state:
@@ -45,11 +46,11 @@ if st.button("Filters"):
     st.session_state["show_filters"] = update_state
 
 if st.session_state["show_filters"] == "True":
-    genre = st.selectbox("Select Genre", genres)
+    author = st.selectbox("Select Author", authors)
     left_column, right_column = st.columns(2)
     from_date = left_column.selectbox("From:", years)
     to_date = right_column.selectbox("To", years, index=6)
-    st.session_state["genre"] = genre
+    st.session_state["author"] = author
     st.session_state["from"] = from_date
     st.session_state["to"] = to_date
 
@@ -69,9 +70,12 @@ def filter_sugestions(suggestion):
 
     for idx in ids_index:
         book_year = final_rating.iloc[idx]["year"]
+        book_author = final_rating.iloc[idx]["author"]
         if not (st.session_state["from"] != "" and book_year and int(book_year) >= int(st.session_state["from"])):
             poster_url.append(None)
         elif not (st.session_state["to"] != "" and book_year and int(book_year) <= int(st.session_state["to"])):
+            poster_url.append(None)
+        elif not (st.session_state["author"] != "" and book_author and book_author == st.session_state["author"]):
             poster_url.append(None)
         else:
             url = final_rating.iloc[idx]["image_url"]
@@ -108,7 +112,7 @@ def recommend_book(book_name: str):
     book_id = np.where(book_pivot.index == book_name)[0][0]
     n_neighbors = (
         BIG_SEARCH
-        if st.session_state["genre"] != "" or st.session_state["from"] != "" or st.session_state["to"] != ""
+        if st.session_state["author"] != "" or st.session_state["from"] != "" or st.session_state["to"] != ""
         else DEFAULT_SEARCH
     )
     distance, suggestion = model.kneighbors(book_pivot.iloc[book_id, :].values.reshape(1, -1), n_neighbors=n_neighbors)
@@ -127,22 +131,17 @@ def recommend_book(book_name: str):
 
 if st.button("Show Recommendation"):
     recommended_books, poster_url = recommend_book(selected_books)
-    if len(recommended_books) == 0:
+    if len(recommended_books) <= 1:
         st.write("No available recommendations for this specific case!")
     else:
-        col1, col2, col3, col4, col5 = st.columns(5)
-        with col1:
-            st.text(recommended_books[1])
-            st.image(poster_url[1])
-        with col2:
-            st.text(recommended_books[2])
-            st.image(poster_url[2])
-        with col3:
-            st.text(recommended_books[3])
-            st.image(poster_url[3])
-        with col4:
-            st.text(recommended_books[4])
-            st.image(poster_url[4])
-        with col5:
-            st.text(recommended_books[5])
-            st.image(poster_url[5])
+
+        num_books = len(recommended_books) - 1
+        num_columns = min(5, num_books)
+
+        cols = st.columns(num_columns)
+
+        for i, x in enumerate(cols):
+            with x:
+                st.text(recommended_books[i+1])
+                st.image(poster_url[i+1])
+            
