@@ -25,7 +25,7 @@ book_names = pickle.load(open("artifacts/book_names.pkl", "rb"))
 final_rating = pickle.load(open("artifacts/final_rating.pkl", "rb"))
 book_pivot = pickle.load(open("artifacts/book_pivot.pkl", "rb"))
 genres = ["Action", "Crime", "Drama", "Comedy", "Horror", "Sci-Fi/Fantasy"]
-years = ["1990", "1995", "2000", "2005"]
+years = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
 
 selected_books = st.selectbox("Search \U0001F50D", book_names)
 # Initialization
@@ -48,7 +48,7 @@ if st.session_state["show_filters"] == "True":
     genre = st.selectbox("Select Genre", genres)
     left_column, right_column = st.columns(2)
     from_date = left_column.selectbox("From:", years)
-    to_date = right_column.selectbox("To", years)
+    to_date = right_column.selectbox("To", years, index=6)
     st.session_state["genre"] = genre
     st.session_state["from"] = from_date
     st.session_state["to"] = to_date
