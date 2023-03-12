@@ -3,8 +3,18 @@ import numpy as np
 import streamlit as st
 from dataclasses import dataclass
 
+
+
+years = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
+ncols = 4
+nlines = 2
+aspectR = 0.59
+posterWidth = 150
+posterHeight = posterWidth/aspectR
+
 BIG_SEARCH = 50
-DEFAULT_SEARCH = 6
+DEFAULT_SEARCH = ncols * nlines
+
 
 hide_streamlit_style = """
             <style>
@@ -26,7 +36,9 @@ final_rating = pickle.load(open("artifacts/final_rating.pkl", "rb"))
 book_pivot = pickle.load(open("artifacts/book_pivot.pkl", "rb"))
 authors = pickle.load(open("artifacts/authors.pkl", "rb"))
 
-years = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
+
+
+
 
 selected_books = st.selectbox("Search \U0001F50D", book_names)
 # Initialization
@@ -129,19 +141,23 @@ def recommend_book(book_name: str):
     return books_list, poster_url
 
 
-if st.button("Show Recommendation"):
-    recommended_books, poster_url = recommend_book(selected_books)
+
+if st.button('Show Recommendations'):
+    recommended_books,poster_url = recommend_book(selected_books)
+
     if len(recommended_books) <= 1:
         st.write("No available recommendations for this specific case!")
     else:
+        cols = st.columns(ncols)
+        for j in range(nlines):
+            for i in range(ncols):
+                k = j*ncols + i
+                with cols[i]:
+                    url = "http://localhost:8502/books?id="+recommended_books[k]
+                    image = poster_url[k]
+                    name = recommended_books[k]
+                # st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><p line-height='0.1' style='text-align:center'>{name}</p></div>", unsafe_allow_html=True)
+                    #st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.2;\">{name}</p></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.3; max-height: 2.6em; overflow: hidden;\">{name}</p></div>", unsafe_allow_html=True)
 
-        num_books = len(recommended_books) - 1
-        num_columns = min(5, num_books)
 
-        cols = st.columns(num_columns)
-
-        for i, x in enumerate(cols):
-            with x:
-                st.text(recommended_books[i+1])
-                st.image(poster_url[i+1])
-            
