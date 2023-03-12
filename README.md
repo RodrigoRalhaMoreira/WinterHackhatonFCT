@@ -41,7 +41,10 @@ streamlit run app.py
 
 
 ```bash
-Authors: WHILE TRUE - WRITE NAMES AFTER
-Email: WRITE AFTER
-
+Authors: 
+António Ferreira - ada.ferreira@campus.fct.unl.pt
+Bravo Mota - jn.mota@campus.fct.unl.pt
+Rafael Lopes - ro.lopes@campus.fct.unl.pt
+Rodrigo Moreira - rr.moreira@campus.fct.unl.pt
+Tiago Duarte - tj.duarte@campus.fct.unl.pt
 ```
