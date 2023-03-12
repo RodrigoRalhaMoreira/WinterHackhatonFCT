@@ -1,28 +1,25 @@
 import pickle
 import numpy as np
 import streamlit as st
-from dataclasses import dataclass
 
 
-
-years = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
-ncols = 4
-nlines = 2
-aspectR = 0.59
-posterWidth = 150
-posterHeight = posterWidth/aspectR
-
+#Constants
+YEARS = ["1990", "1995", "2000", "2005", "2010", "2015", "2020"]
+NCOLS = 4
+NLINES = 2
+ASPECTR = 0.59
+POSTERWIDTH = 150
+POSTERHEIGHT = POSTERWIDTH/ASPECTR
 BIG_SEARCH = 50
-DEFAULT_SEARCH = ncols * nlines +1
+DEFAULT_SEARCH = NCOLS * NLINES +1
 
 
+#Front end page configurations
 st.set_page_config(
     page_title="WhileTrue",
     page_icon=":books:",
     initial_sidebar_state="collapsed"
 )
-
-
 hide_streamlit_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -33,6 +30,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 
+#Loading data and model
 model = pickle.load(open("artifacts/model.pkl", "rb"))
 book_names = pickle.load(open("artifacts/book_names.pkl", "rb"))
 final_rating = pickle.load(open("artifacts/final_rating.pkl", "rb"))
@@ -40,13 +38,7 @@ book_pivot = pickle.load(open("artifacts/book_pivot.pkl", "rb"))
 authors = pickle.load(open("artifacts/authors.pkl", "rb"))
 
 
-
-
-
-
-
-
-
+#Filetering results
 def filter_sugestions(suggestion):
     book_name = []
     ids_index = []
@@ -80,6 +72,7 @@ def filter_sugestions(suggestion):
     return books_filtered
 
 
+#Fetching book's poster from dataset
 def fetch_poster(suggestion):
     book_name = []
     ids_index = []
@@ -87,11 +80,9 @@ def fetch_poster(suggestion):
 
     for book_id in suggestion:
         book_name.append(book_pivot.index[book_id])
-
     for name in book_name[0]:
         ids = np.where(final_rating["title"] == name)[0][0]
         ids_index.append(ids)
-
     for idx in ids_index:
         url = final_rating.iloc[idx]["image_url"]
         poster_url.append(url)
@@ -99,6 +90,8 @@ def fetch_poster(suggestion):
     return poster_url
 
 
+
+#Usage of model
 def recommend_book(book_name: str):
     books_list = []
     book_id = np.where(book_pivot.index == book_name)[0][0]
@@ -123,35 +116,23 @@ def recommend_book(book_name: str):
 
 
 
-# ----- site design ------- 
-
-
-
-
+# ----- site design ------- #
 
 st.header("Find something to read")
 
-
-
-
 col0, col1 = st.columns([80,20])
-
 with col0:
     selected_books = st.selectbox("Search for a book", book_names)
-
-
 with col1:
     st.markdown("<div style='height:34px'></div>", unsafe_allow_html=True)
     if st.button("Filters", use_container_width=True):
         update_state = (
             "True" if st.session_state["show_filters"] == "False" or st.session_state["show_filters"] == "" else "False"
         )
-
-
         st.session_state["show_filters"] = update_state
 
 
-# Initialization
+# Initialization of filter's state
 if "author" not in st.session_state:
     st.session_state["author"] = ""
 if "from" not in st.session_state:
@@ -162,17 +143,14 @@ if "show_filters" not in st.session_state:
     st.session_state["show_filters"] = ""
 
 
+#Some filter's logic
 ss_show_filter = st.session_state["show_filters"]
 if ss_show_filter == "True":
     author = st.selectbox("Select Author", authors)
     left_column, right_column = st.columns(2)
-    from_date = left_column.selectbox("From:", years)
-    to_date = right_column.selectbox("To:", years, index=6)
-    print ("HHHHHHHHHH")
-    print (author)
-    print (authors[0])
+    from_date = left_column.selectbox("From:", YEARS)
+    to_date = right_column.selectbox("To:", YEARS, index=6)
     if (author != authors[0]):
-        print ("!!!")
         st.session_state["author"] = author
     else:
         st.session_state["author"] = ""
@@ -184,6 +162,8 @@ elif ss_show_filter == "False":
     st.session_state["to"] = ""
 
 
+
+#Return of results
 if st.button('Show Recommendations'):
     st.write(st.session_state["author"])
     recommended_books,poster_url = recommend_book(selected_books)
@@ -191,17 +171,17 @@ if st.button('Show Recommendations'):
     if len(recommended_books) <= 1:
         st.write("No available recommendations for this specific case!")
     else:
-        cols = st.columns(ncols)
-        for j in range(nlines):
-            for i in range(ncols):
-                k = j*ncols + i +1
+        cols = st.columns(NCOLS)
+        for j in range(NLINES):
+            for i in range(NCOLS):
+                k = j*NCOLS + i +1
                 if(k<len(poster_url)):
                     with cols[i]:
                         url = "http://localhost:8501/books?id="+recommended_books[k]
                         image = poster_url[k]
                         name = recommended_books[k]
-                    # st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><p line-height='0.1' style='text-align:center'>{name}</p></div>", unsafe_allow_html=True)
-                        #st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.2;\">{name}</p></div>", unsafe_allow_html=True)
-                        st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{posterWidth}\" height=\"{posterHeight}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.3; max-height: 2.6em; overflow: hidden;\">{name}</p></div>", unsafe_allow_html=True)
+                    # st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{POSTERWIDTH}\" height=\"{POSTERHEIGHT}\" style='max-width:100%'></a><p line-height='0.1' style='text-align:center'>{name}</p></div>", unsafe_allow_html=True)
+                        #st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{POSTERWIDTH}\" height=\"{POSTERHEIGHT}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.2;\">{name}</p></div>", unsafe_allow_html=True)
+                        st.markdown(f"<div style='text-align:center'> <a target=\'_self\' href='{url}'> <img src='{image}' alt='{name}' width=\"{POSTERWIDTH}\" height=\"{POSTERHEIGHT}\" style='max-width:100%'></a><div style='margin-bottom: 5px; padding-bottom: 5px;'></div><p style=\"line-height: 1.3; max-height: 2.6em; overflow: hidden;\">{name}</p></div>", unsafe_allow_html=True)
 
 

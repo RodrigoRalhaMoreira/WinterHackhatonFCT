@@ -9,6 +9,11 @@ params = st.experimental_get_query_params()
 name = params["id"][0]
 
 
+st.set_page_config(
+    page_title="WhileTrue",
+    page_icon=":books:",
+    initial_sidebar_state="collapsed"
+)
 
 model = pickle.load(open('artifacts/model.pkl','rb'))
 book_names = pickle.load(open('artifacts/book_names.pkl','rb'))
